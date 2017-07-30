@@ -1,18 +1,10 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-```{r global_options, include=FALSE}
-knitr::opts_chunk$set(fig.path='figure/',
-                      warning=FALSE, 
-                      message=FALSE)
-```
+# Reproducible Research: Peer Assessment 1
+
 
 ## Loading and preprocessing the data
 #### Load the data.
-```{r}
+
+```r
 # Downloading zip file if necessary.
 urlZipFile <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 zipFile <- "activity.zip"
@@ -27,7 +19,8 @@ if (!file.exists(filename)) {
 }
 ```
 #### Process/transform the data (if necessary) into a format suitable for your analysis.
-```{r}
+
+```r
 # Loading inputSet table with all data.
 inputSet <- read.table(file = filename, header = TRUE, sep = ",", na.strings = "NA")
 
@@ -48,12 +41,14 @@ noMissingStepsSet <- subset(inputSet, !is.na(inputSet$steps))
 
 ## What is mean total number of steps taken per day?
 #### Calculate the total number of steps taken per day.
-```{r}
+
+```r
 plot1Set <- aggregate(. ~ date, noMissingStepsSet, sum)[, c(1, 2)]
 ```
 
 #### Make a histogram of the total number of steps taken each day
-```{r}
+
+```r
 plot(plot1Set$date, 
      plot1Set$steps, 
      type = "h", 
@@ -62,15 +57,30 @@ plot(plot1Set$date,
      main = "Total Number of Steps Taken Each Day")
 ```
 
+![](figure/unnamed-chunk-4-1.png)<!-- -->
+
 #### Calculate and report the mean and median of the total number of steps taken per day
-```{r}
+
+```r
 sprintf("Mean Total Number of Steps Taken per Day: %5.2f", mean(plot1Set$steps))
+```
+
+```
+## [1] "Mean Total Number of Steps Taken per Day: 10766.19"
+```
+
+```r
 sprintf("Median Total Number of Steps Taken per Day: %5.2f", median(plot1Set$steps))
+```
+
+```
+## [1] "Median Total Number of Steps Taken per Day: 10765.00"
 ```
 
 ## What is the average daily activity pattern?
 #### Make a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-```{r}
+
+```r
 # Computing mean() for each interval.
 meanIntervals <- aggregate(. ~ interval, noMissingStepsSet[, c(1, 3)], mean)
 
@@ -87,24 +97,43 @@ axis(1,
      labels = c("00h00", "", "04h00", "", "08h00", "", "12h00", "", "16h00", "", "20h00", "", "24h00"))
 ```
 
+![](figure/unnamed-chunk-6-1.png)<!-- -->
+
 #### Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-```{r}
+
+```r
 sprintf("5-minutes interval %d contains the maximum number of steps (%5.2f)", 
         meanIntervals[meanIntervals$steps == max(meanIntervals$steps),]$interval,
         meanIntervals[meanIntervals$steps == max(meanIntervals$steps),]$steps)
 ```
 
+```
+## [1] "5-minutes interval 835 contains the maximum number of steps (206.17)"
+```
+
 ## Imputing missing values
 #### Calculate and report the total number of missing values in the dataset.
-```{r}
+
+```r
 # Looking for missing values columns.
 sprintf("%2.2f%% steps values are missing.", mean(is.na(inputSet$steps)) * 100)
+```
 
+```
+## [1] "13.11% steps values are missing."
+```
+
+```r
 sprintf("Number of records with missing value in steps column: %d.", sum(is.na(inputSet$steps)))
 ```
 
+```
+## [1] "Number of records with missing value in steps column: 2304."
+```
+
 #### Devise a strategy for filling in all of the missing values in the dataset.
-```{r}
+
+```r
 # Loading set including only missing values for steps column.
 missingStepsSet <- subset(inputSet, is.na(inputSet$steps))
 
@@ -115,13 +144,15 @@ for (currentInterval in meanIntervals$interval) {
 ```
 
 #### Create a new dataset that is equal to the original dataset but with the missing data filled in.
-```{r}
+
+```r
 # Merging the two sets.
 fullSet <- rbind(noMissingStepsSet, missingStepsSet)
 ```
 
 #### Make a histogram of the total number of steps taken each day
-```{r}
+
+```r
 plot2Set <- aggregate(. ~ date, fullSet, sum)[, c(1, 2)]
 
 plot(plot2Set$date, 
@@ -132,16 +163,31 @@ plot(plot2Set$date,
      main = "Total Number of Steps Taken Each Day")
 ```
 
+![](figure/unnamed-chunk-11-1.png)<!-- -->
+
 #### Calculate and report the mean and median total number of steps taken per day.
-```{r}
+
+```r
 # Calculate and report the mean and median total number of steps taken per day.
 sprintf("Mean Total Number of Steps Taken per Day: %5.2f", mean(plot2Set$steps))
+```
+
+```
+## [1] "Mean Total Number of Steps Taken per Day: 10765.64"
+```
+
+```r
 sprintf("Median Total Number of Steps Taken per Day: %5.2f", median(plot2Set$steps))
+```
+
+```
+## [1] "Median Total Number of Steps Taken per Day: 10762.00"
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
 #### Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
-```{r}
+
+```r
 # Difference in activity patterns between weekdays and weekends.
 fullSet$dayOfWeek <- ifelse(weekdays(fullSet$date) %in% c("Samedi", "Dimanche"), "weekend", "weekday")
 
@@ -151,7 +197,8 @@ weekendSet <- subset(dayOfWeekFullSet, dayOfWeek == "weekend", select = c(interv
 ```
 
 #### Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
-```{r fig.height=10}
+
+```r
 par(mfrow = c(2, 1))
 
 plot(weekdaySet$interval, 
@@ -178,3 +225,5 @@ axis(1,
      at = c(0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400), 
      labels = c("00h00", "", "04h00", "", "08h00", "", "12h00", "", "16h00", "", "20h00", "", "24h00"))
 ```
+
+![](figure/unnamed-chunk-14-1.png)<!-- -->
